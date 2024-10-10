@@ -50,7 +50,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
     Enemy enemies[kNumEnemies];
     for (int i = 0; i < kNumEnemies; i++) {
-        enemies[i].pos.x = static_cast<float>(rand() % 5120);  // ランダムなx座標
+        enemies[i].pos.x = static_cast<float>(rand() % 500);  // ランダムなx座標
         enemies[i].pos.y = static_cast<float>(rand() % 720);   // ランダムなy座標
         enemies[i].radius = 20.0f;
     }
@@ -106,6 +106,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         // タイトルシーン更新
         //====================
         case title: 
+
+            player = { {300.0f, 360.0f}, {0.0f, 0.0f}, 20.0f, 0 };
+
+            for (int i = 0; i < kNumEnemies; i++) {
+                enemies[i].pos.x = static_cast<float>(rand() % 5120);  // ランダムなx座標
+                enemies[i].pos.y = static_cast<float>(rand() % 720);   // ランダムなy座標
+                enemies[i].radius = 20.0f;
+            }
 
             if (keys[DIK_SPACE] && preKeys[DIK_SPACE] == 0) {
                 scene = ingame;
@@ -195,6 +203,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
             }
             else if (scrollX > scrollEnd2 - scrollEnd1) {
                 scrollX = scrollEnd2 - scrollEnd1;
+            }
+
+            // プレイヤーと敵の当たり判定
+            for (int i = 0; i < kNumEnemies; i++) {
+                // プレイヤーと敵の距離を計算
+                float dx = player.pos.x - enemies[i].pos.x;
+                float dy = player.pos.y - enemies[i].pos.y;
+                float distance = sqrtf(dx * dx + dy * dy);
+
+                // 衝突判定
+                if (distance < player.radius + enemies[i].radius) {
+                    // ゲーム終了
+                    scene = end;
+                    break; // 最初の敵と衝突したらループを抜ける
+                }
             }
 
             // プレイヤーが画面外に出ないようにする
