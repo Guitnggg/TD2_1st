@@ -101,6 +101,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
                         player.velocity.x = 10.0f;
                         player.jumpCount++;
                     }
+                    // スペース連打の時の処理
                     else if (spacePressDuration > 5) {
                         player.velocity.y = -15.0f;
                         player.velocity.x = -10.0f;
