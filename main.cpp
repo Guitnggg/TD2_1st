@@ -1,6 +1,6 @@
 #include <Novice.h>
 
-const char kWindowTitle[] = "学籍番号";
+const char kWindowTitle[] = "TD2_第一回";
 
 struct Vector2 {
     float x;
@@ -28,15 +28,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
     //スクロールに関する変数
     //背景の変数
-	int back1GH = Novice::LoadTexture("./NoviceResources/back/Background1.png");
-	int back2GH = Novice::LoadTexture("./NoviceResources/back/Background2.png");
-	int back3GH = Novice::LoadTexture("./NoviceResources/back/Background3.png");
-	int back4GH = Novice::LoadTexture("./NoviceResources/back/Background4.png");
+    int back1GH = Novice::LoadTexture("./NoviceResources/back/Background1.png");
+    int back2GH = Novice::LoadTexture("./NoviceResources/back/Background2.png");
+    int back3GH = Novice::LoadTexture("./NoviceResources/back/Background3.png");
+    int back4GH = Novice::LoadTexture("./NoviceResources/back/Background4.png");
 
-	float back1PosX = 0.0f;
-	float back2PosX = 1280.0f;
-	float back3PosX = 2560.0f;
-	float back4posX = 3840.0f;
+    float back1PosX = 0.0f;
+    float back2PosX = 1280.0f;
+    float back3PosX = 2560.0f;
+    float back4posX = 3840.0f;
 
     float scrollX;
     float scrollEnd1 = 640.0f;
@@ -50,6 +50,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     int spacePressDuration = 0;  // 押下時間
     bool spacePressed = false;   // 押下状態
 
+    // 連打判定のための変数
+    int spacePressCount = 0;     // 連打回数
+    const int DoubleTapThreshold = 10;  // 連打判定のフレーム数のしきい値
+    int lastSpaceReleaseFrame = -DoubleTapThreshold; // 最後にスペースキーを離したフレーム
+
+    // 現在のフレーム数を保持
+    int frameCount = 0;
+
     // ウィンドウの×ボタンが押されるまでループ
     while (Novice::ProcessMessage() == 0) {
         // フレームの開始
@@ -60,6 +68,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         Novice::GetHitKeyStateAll(keys);
 
         /// ↓更新処理ここから
+
+        // フレーム数を更新
+        frameCount++;
 
         // 重力の適用（常に下方向に加算）
         player.velocity.y += Gravity;
@@ -72,22 +83,40 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
             }
         }
         else {
-            if (spacePressed && player.jumpCount < 2) {
-                // スペースキーが離された瞬間のジャンプ処理
-                if (spacePressDuration > 0 && spacePressDuration <= 15) {
-                    player.velocity.y = -15.0f;
-                    player.velocity.x = 10.0f;
-                    player.jumpCount++;
+            if (spacePressed) {
+                // 連打判定処理
+                if (frameCount - lastSpaceReleaseFrame <= DoubleTapThreshold) {
+                    spacePressCount++;
                 }
-                else if (spacePressDuration > 15) {
-                    player.velocity.y = -15.0f;
-                    player.velocity.x = -10.0f;
-                    player.jumpCount++;
+                else {
+                    spacePressCount = 1;
                 }
+                lastSpaceReleaseFrame = frameCount;
+
+                // ジャンプ回数の制限
+                if (player.jumpCount < 2) {
+                    // スペースキーが離された瞬間のジャンプ処理
+                    if (spacePressDuration > 0 && spacePressDuration <= 15) {
+                        player.velocity.y = -15.0f;
+                        player.velocity.x = 10.0f;
+                        player.jumpCount++;
+                    }
+                    else if (spacePressDuration > 5) {
+                        player.velocity.y = -15.0f;
+                        player.velocity.x = -10.0f;
+                        player.jumpCount++;
+                    }
+                }
+
+                // 連打による追加アクション（例: プレイヤーの速度を上げる）
+                if (spacePressCount > 2) {
+                    player.velocity.y = 30.0f;  // 連打時に速度を上げる
+                }
+
+                // 押下時間リセット
+                spacePressDuration = 0;
+                spacePressed = false;
             }
-            // 押下時間リセット
-            spacePressDuration = 0;
-            spacePressed = false;
         }
 
         // プレイヤーの位置更新
@@ -129,12 +158,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         Novice::DrawSprite((int)back4posX - (int)scrollX, 0, back4GH, 1.0f, 1.0f, 0.0f, WHITE);
 
         // プレイヤーの描画
-        Novice::DrawEllipse((int)(player.pos.x-(int)scrollX), (int)(player.pos.y), (int)player.radius, (int)player.radius, 0.0f, WHITE, kFillModeSolid);
+        Novice::DrawEllipse((int)(player.pos.x - (int)scrollX), (int)(player.pos.y), (int)player.radius, (int)player.radius, 0.0f, WHITE, kFillModeSolid);
 
         // 状態表示
         Novice::ScreenPrintf(950, 10, "Space Press Duration: %d", spacePressDuration);
         Novice::ScreenPrintf(950, 30, "Player Position: (%.2f, %.2f)", player.pos.x, player.pos.y);
         Novice::ScreenPrintf(950, 50, "Jump Count: %d", player.jumpCount); // ジャンプ回数表示
+        Novice::ScreenPrintf(950, 70, "Space Press Count: %d", spacePressCount); // 連打回数表示
 
         /// ↑描画処理ここまで
 
