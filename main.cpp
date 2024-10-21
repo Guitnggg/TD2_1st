@@ -50,7 +50,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
     Enemy enemies[kNumEnemies];
     for (int i = 0; i < kNumEnemies; i++) {
-        enemies[i].pos.x = static_cast<float>(rand() % 500);  // ランダムなx座標
+        enemies[i].pos.x = static_cast<float>(rand() % 5000);  // ランダムなx座標
         enemies[i].pos.y = static_cast<float>(rand() % 720);   // ランダムなy座標
         enemies[i].radius = 20.0f;
     }
@@ -99,7 +99,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         memcpy(preKeys, keys, 256);
         Novice::GetHitKeyStateAll(keys);
 
+        ///
         /// ↓更新処理ここから
+        ///
 
         switch (scene){
         //====================
@@ -162,13 +164,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
                         // スペースキーが離された瞬間のジャンプ処理
                         if (spacePressDuration > 0 && spacePressDuration <= 15) {
                             player.velocity.y = -15.0f;
-                            player.velocity.x = 10.0f;
+                            player.velocity.x = 5.0f;
                             player.jumpCount++;
                         }
                         // スペース連打の時の処理
                         else if (spacePressDuration > 5) {
                             player.velocity.y = -15.0f;
-                            player.velocity.x = -10.0f;
+                            player.velocity.x = -5.0f;
                             player.jumpCount++;
                         }
                     }
@@ -242,11 +244,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
             break;
         }
 
+        ///
         /// ↑更新処理ここまで
-
+        ///
+        
+        ///
         /// ↓描画処理ここから
+        /// 
 
-        switch ((scene)){
+        switch (scene){
         //====================
         // タイトルシーン描画
         //====================
@@ -296,7 +302,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
             break;
         }      
 
+        ///
         /// ↑描画処理ここまで
+        /// 
 
         // フレームの終了
         Novice::EndFrame();
